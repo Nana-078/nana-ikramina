@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="object-src 'none'; base-uri 'self';">
 <title>Maison – Food &amp; Moments</title>
 <meta name="description" content="Katalog kuliner UMKM Maison – Food &amp; Moments bernuansa Victorian minimalis dengan fitur filter rasa/jenis, keranjang WhatsApp, serta Dashboard User dan Admin.">
 <meta property="og:title" content="Maison – Food &amp; Moments">
@@ -33,9 +34,9 @@ button,input,select,textarea{font:inherit;color:inherit}
 .wrap{max-width:1180px;margin:auto;padding:0 24px}
 
 /* Category Gradient Tokens */
-[data-taste="Manis"]{--g1:#FFF6EC;--g2:#F3CDB8;--accent:#A8573A}
-[data-taste="Asin dan gurih"]{--g1:#FFF9E8;--g2:#F2D58A;--accent:#9A6B12}
-[data-taste="Pedas"]{--g1:#FFF0EC;--g2:#F4B1A4;--accent:#B3261E}
+[data-taste="Manis"]{--g1:#FFF0F6;--g2:#F7BBD0;--accent:#AD2E62}
+[data-taste="Asin dan gurih"]{--g1:#FFFBE6;--g2:#F7E076;--accent:#8F6800}
+[data-taste="Pedas"]{--g1:#FFF0EE;--g2:#F5B2AC;--accent:#B3261E}
 [data-taste="Asam dan segar"]{--g1:#F0F8EA;--g2:#CFE6A8;--accent:#4F7A22}
 /* Priority for Minuman */
 [data-type="Minuman"]{--g1:#EAF4FB;--g2:#BFDDF2;--accent:#2F6FA3}
@@ -231,6 +232,18 @@ footer{background:var(--cocoa);color:#d7c7b9;text-align:center;font-size:13px;pa
 .shake{animation:modalShake .42s cubic-bezier(.36,.07,.19,.97) both}
 @keyframes modalShake{10%,90%{transform:translateX(-4px)}20%,80%{transform:translateX(6px)}30%,50%,70%{transform:translateX(-8px)}40%,60%{transform:translateX(8px)}}
 
+/* Entry Security Gate & Welcome Banner */
+.gate-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:radial-gradient(circle at top right,var(--sand) 0%,var(--cream) 48%,var(--ivory) 100%)}
+.gate-card{background:var(--ivory);border:1px solid var(--brown);border-radius:16px;max-width:500px;width:100%;padding:32px 28px;box-shadow:0 22px 54px rgba(48,37,31,.16);display:flex;flex-direction:column;gap:14px}
+.gate-crest{text-align:center;color:var(--brown);margin-bottom:4px}
+.gate-crest .orn{font-size:14px;letter-spacing:.3em;display:block}
+.gate-crest b{display:block;font:600 44px/0.95 'Cormorant Garamond',serif}
+.gate-crest small{font-size:12px;color:var(--cocoa);letter-spacing:.08em}
+.gate-step-tag{align-self:center;font-size:12px;font-weight:600;color:var(--brown);background:var(--cream);border:1px solid var(--line);border-radius:999px;padding:4px 14px}
+.welcome-strip{background:linear-gradient(90deg,var(--sand),var(--cream));border-bottom:1px solid var(--line);padding:12px 0}
+.welcome-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:14px}
+.welcome-inner strong{font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--cocoa);line-height:1.1}
+
 /* Dashboard Layout */
 .dash-wrap{min-height:calc(100vh - 165px);padding:28px 0 64px;background:var(--cream)}
 .dash-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:22px}
@@ -329,7 +342,102 @@ table.adm-tbl{width:100%;border-collapse:collapse;font-size:14px}
 </style>
 </head>
 <body>
-<header>
+<!-- Security Entry Gate (Step 1: Password -> Step 2: Profile/WA Setup) -->
+<section id="entryGate" class="gate-screen" aria-label="Gerbang Keamanan Maison">
+  <div class="gate-card" id="gateCard">
+    <div class="gate-crest">
+      <span class="orn">━ ❦ ━</span>
+      <b>Maison</b>
+      <small>Food &amp; Moments</small>
+    </div>
+    <span class="gate-step-tag" id="gateStepTag">Langkah 1 dari 2 · Verifikasi Akses</span>
+
+    <!-- Step 1: Role + Password -->
+    <form id="gatePassForm" novalidate style="display:flex;flex-direction:column;gap:14px">
+      <div style="text-align:center">
+        <h1 class="serif" style="font-size:28px;line-height:1.15;color:var(--cocoa)">Verifikasi Keamanan</h1>
+        <p style="font-size:14px;color:#5b4a3f;margin-top:4px">Pilih peran dan masukkan password untuk membuka katalog.</p>
+      </div>
+      <div class="field">
+        <label>Peran Akun</label>
+        <div class="seg" role="group" aria-label="Pilih peran masuk">
+          <button type="button" id="gateRoleUser" aria-pressed="true">User</button>
+          <button type="button" id="gateRoleAdmin" aria-pressed="false">Admin</button>
+        </div>
+      </div>
+      <div class="field">
+        <label for="gatePass">Password</label>
+        <div class="pass-wrap">
+          <input id="gatePass" type="password" autocomplete="current-password" placeholder="Masukkan password..." required>
+          <button type="button" class="pass-toggle" id="gateTogglePass" aria-label="Tampilkan password">Tampil</button>
+        </div>
+      </div>
+      <div class="err-msg" id="gateError" role="alert"></div>
+      <div class="lock-msg" id="gateLockMsg" role="status"></div>
+      <button type="submit" class="btn" id="gatePassSubmit">Lanjutkan</button>
+      <p class="sec-note">Perlindungan akses: verifikasi memakai hash SHA-256 ter-salt, penguncian otomatis setelah 5 percobaan salah, serta batas waktu sesi. Pada hosting statis tanpa server, kata sandi default demo (<code style="font-size:11px">user</code> / <code style="font-size:11px">admin</code>) dapat diubah oleh Admin di Dashboard.</p>
+    </form>
+
+    <!-- Step 2A: User Identity Form -->
+    <form id="gateUserForm" novalidate hidden style="display:flex;flex-direction:column;gap:12px">
+      <div style="text-align:center">
+        <h2 class="serif" style="font-size:28px;line-height:1.15;color:var(--cocoa)">Lengkapi Data Pengunjung</h2>
+        <p style="font-size:14px;color:#5b4a3f;margin-top:4px">Isi data singkat Anda sebelum mulai menikmati menu Maison.</p>
+      </div>
+      <div class="field">
+        <label for="obUserName">Nama Lengkap / Panggilan</label>
+        <input id="obUserName" type="text" minlength="2" maxlength="50" required placeholder="Contoh: Nadia Putri">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field">
+          <label for="obUserAge">Umur (tahun)</label>
+          <input id="obUserAge" type="number" min="5" max="120" required placeholder="22">
+        </div>
+        <div class="field">
+          <label for="obUserGender">Jenis Kelamin</label>
+          <select id="obUserGender" required>
+            <option value="">Pilih...</option>
+            <option value="Perempuan">Perempuan</option>
+            <option value="Laki-laki">Laki-laki</option>
+            <option value="Lainnya">Lainnya</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="obUserAddr">Alamat Lengkap</label>
+        <textarea id="obUserAddr" minlength="5" maxlength="200" required placeholder="Jl. Contoh No. 10, Kelurahan, Kota..."></textarea>
+      </div>
+      <div class="err-msg" id="obUserError" role="alert"></div>
+      <div style="display:flex;gap:10px;margin-top:4px">
+        <button type="button" class="btn outline" id="obUserBack">Kembali</button>
+        <button type="submit" class="btn" style="flex:1">Masuk &amp; Gunakan Web</button>
+      </div>
+    </form>
+
+    <!-- Step 2B: Admin Onboarding + WhatsApp Setup -->
+    <form id="gateAdminForm" novalidate hidden style="display:flex;flex-direction:column;gap:12px">
+      <div style="text-align:center">
+        <h2 class="serif" style="font-size:28px;line-height:1.15;color:var(--cocoa)">Profil &amp; Kontak WhatsApp Admin</h2>
+        <p style="font-size:14px;color:#5b4a3f;margin-top:4px">Atur nama Admin dan nomor WhatsApp agar User dapat menghubungi toko.</p>
+      </div>
+      <div class="field">
+        <label for="obAdminName">Nama Admin</label>
+        <input id="obAdminName" type="text" minlength="2" maxlength="50" required placeholder="Contoh: Admin Nana">
+      </div>
+      <div class="field">
+        <label for="obAdminWa">Nomor WhatsApp Kontak Toko (awalan 62)</label>
+        <input id="obAdminWa" type="tel" pattern="^62[0-9]{8,14}$" required placeholder="6281234567890">
+      </div>
+      <div class="err-msg" id="obAdminError" role="alert"></div>
+      <div style="display:flex;gap:10px;margin-top:4px">
+        <button type="button" class="btn outline" id="obAdminBack">Kembali</button>
+        <button type="submit" class="btn" style="flex:1">Simpan &amp; Masuk</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<header id="appHeader" hidden>
   <div class="wrap nav">
     <a class="logo" href="#home" aria-label="Maison Food &amp; Moments">
       <span class="orn">━ ❦ ━</span>
@@ -362,7 +470,17 @@ table.adm-tbl{width:100%;border-collapse:collapse;font-size:14px}
   </div>
 </header>
 
-<main id="storefront">
+<main id="storefront" hidden>
+  <div class="welcome-strip" id="welcomeBanner" hidden>
+    <div class="wrap welcome-inner">
+      <div>
+        <strong id="welcomeGreeting" tabindex="-1">Selamat datang!</strong>
+        <div id="welcomeMeta" style="color:#5b4a3f;font-size:13px"></div>
+      </div>
+      <a href="#/dashboard" class="btn btn-sm" id="welcomeDashLink">Buka Dashboard</a>
+    </div>
+  </div>
+
   <section class="hero" id="home" style="padding:0">
     <div class="wrap">
       <div class="o hero-anim hero-d1">❦</div>
@@ -404,11 +522,11 @@ table.adm-tbl{width:100%;border-collapse:collapse;font-size:14px}
         <p>Pilih rasa atau jenis produk, atau gunakan kolom pencarian di atas.</p>
       </div>
       <div class="legend" aria-label="Legenda warna kategori produk">
-        <span class="legend-item" data-taste="Pedas"><span class="legend-dot"></span>Pedas</span>
-        <span class="legend-item" data-taste="Manis"><span class="legend-dot"></span>Manis</span>
-        <span class="legend-item" data-taste="Asin dan gurih"><span class="legend-dot"></span>Gurih</span>
-        <span class="legend-item" data-type="Minuman"><span class="legend-dot"></span>Minuman</span>
-        <span class="legend-item" data-taste="Asam dan segar"><span class="legend-dot"></span>Segar</span>
+        <span class="legend-item" data-taste="Pedas"><span class="legend-dot"></span>Pedas (Merah)</span>
+        <span class="legend-item" data-taste="Manis"><span class="legend-dot"></span>Manis (Pink)</span>
+        <span class="legend-item" data-taste="Asin dan gurih"><span class="legend-dot"></span>Asin / Gurih (Kuning)</span>
+        <span class="legend-item" data-type="Minuman"><span class="legend-dot"></span>Minuman (Biru)</span>
+        <span class="legend-item" data-taste="Asam dan segar"><span class="legend-dot"></span>Segar (Hijau)</span>
       </div>
       <div class="chips" id="fTaste"><span class="lbl">Rasa</span></div>
       <div class="chips" id="fType"><span class="lbl">Jenis</span></div>
@@ -480,9 +598,9 @@ table.adm-tbl{width:100%;border-collapse:collapse;font-size:14px}
   <div class="wrap" id="dashContainer"></div>
 </section>
 
-<footer>© 2026 <span id="footerStoreName">Maison – Food &amp; Moments</span></footer>
+<footer id="appFooter" hidden>© 2026 <span id="footerStoreName">Maison – Food &amp; Moments</span></footer>
 
-<a class="btn fab" id="waFab" target="_blank" rel="noopener">
+<a class="btn fab" id="waFab" target="_blank" rel="noopener" hidden>
   <svg width="20" height="20" viewBox="0 0 24 24" fill="#FFFDF8" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.1-1.3A10 10 0 1 0 12 2Z"/></svg>
   <span>Hubungi Kami di WhatsApp</span>
 </a>
@@ -503,37 +621,6 @@ table.adm-tbl{width:100%;border-collapse:collapse;font-size:14px}
         <button type="button" class="btn outline" id="mCartBtn" hidden style="flex:1 1 150px">+ Keranjang</button>
         <button type="button" class="btn outline btn-sm" id="mWishBtn" hidden>♡ Favorit</button>
       </div>
-    </div>
-  </div>
-</div>
-
-<!-- Login Modal -->
-<div class="modal" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
-  <div class="box narrow" id="loginBox">
-    <button type="button" class="x" id="loginClose" aria-label="Tutup login">×</button>
-    <div class="modal-body">
-      <h3 id="loginTitle" class="serif" style="font-size:32px;line-height:1.1">Masuk ke Maison</h3>
-      <p style="font-size:14px;color:#5b4a3f">Pilih peran dan masukkan kata sandi untuk mengakses dashboard.</p>
-      <form id="loginForm" novalidate style="display:flex;flex-direction:column;gap:14px">
-        <div class="field">
-          <label>Peran Akun</label>
-          <div class="seg" role="group" aria-label="Pilih peran">
-            <button type="button" id="roleUserBtn" aria-pressed="true">User</button>
-            <button type="button" id="roleAdminBtn" aria-pressed="false">Admin</button>
-          </div>
-        </div>
-        <div class="field">
-          <label for="loginPass">Password</label>
-          <div class="pass-wrap">
-            <input id="loginPass" type="password" autocomplete="current-password" placeholder="Masukkan password..." required>
-            <button type="button" class="pass-toggle" id="loginTogglePass" aria-label="Tampilkan password">Tampil</button>
-          </div>
-        </div>
-        <div class="err-msg" id="loginError" role="alert"></div>
-        <div class="lock-msg" id="loginLockMsg" role="status"></div>
-        <button type="submit" class="btn" id="loginSubmit">Masuk</button>
-      </form>
-      <p class="sec-note">Catatan keamanan: Karena situs ini merupakan website statis tanpa server, kata sandi tersimpan di kode JavaScript. Sistem ini ditujukan untuk demo atau penggunaan internal, bukan perlindungan data produksi.</p>
     </div>
   </div>
 </div>
@@ -623,12 +710,13 @@ table.adm-tbl{width:100%;border-collapse:collapse;font-size:14px}
 // ============================================================================
 // Data
 // ============================================================================
-// Catatan keamanan: Password disimpan di JavaScript sisi klien karena website
-// ini statis tanpa backend. Hanya untuk demo/penggunaan internal.
-// Pada produksi, autentikasi wajib diverifikasi di server.
-const AUTH_PASSWORDS = {
-  admin: "admin",
-  user: "user"
+// Verifikasi password memakai hash SHA-256 ter-salt (tanpa plaintext di kode).
+// Catatan keamanan: Pada situs statis tanpa server, kata sandi default demo
+// hanya melindungi akses lokal/demo; pada produksi wajib verifikasi di server.
+const AUTH_SALT = "maison-victorian-v2-2026:";
+const DEFAULT_AUTH_HASHES = {
+  admin: "8d9bb1176f02a13a059f27e4ccbf23a346f4129f76158416e97ac3031fe3d492",
+  user: "600f503d2d90d1a77be6cca4ec159cc90a4aff045ef1b0eb5eea82a323fc8fc1"
 };
 
 const WA = "6281234567890"; // ganti dengan nomor WhatsApp Maison
@@ -658,7 +746,8 @@ const KEYS = {
   CART: "maison_cart",
   SETTINGS: "maison_settings",
   SESSION: "maison_session",
-  LOCK: "maison_login_lock"
+  LOCK: "maison_login_lock",
+  AUTH_HASHES: "maison_auth_hashes"
 };
 
 const FALLBACK_SVG = "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(
@@ -710,17 +799,19 @@ function cloneProducts() {
 }
 
 function normalizeProduct(p) {
+  const rawImgData = typeof p.imgData === "string" ? p.imgData : "";
+  const safeData = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(rawImgData) ? rawImgData : "";
   return {
     id: Number(p.id) || Date.now(),
-    name: String(p.name || "Produk Maison"),
+    name: String(p.name || "Produk Maison").slice(0, 80),
     taste: ["Manis","Asin dan gurih","Pedas","Asam dan segar"].includes(p.taste) ? p.taste : "Manis",
     type: ["Makanan utama","Camilan","Dessert","Minuman"].includes(p.type) ? p.type : "Camilan",
     price: Math.max(0, Number(p.price) || 0),
     fav: p.fav ? 1 : 0,
     available: p.available !== false,
-    img: p.img || "",
-    imgData: p.imgData || "",
-    desc: String(p.desc || "")
+    img: typeof p.img === "string" && IM[p.img] ? p.img : "",
+    imgData: safeData,
+    desc: String(p.desc || "").slice(0, 300)
   };
 }
 
@@ -737,7 +828,12 @@ let P = (() => {
 let settings = (() => {
   const stored = lsGet(KEYS.SETTINGS, null);
   if (stored && typeof stored === "object") {
-    return { ...DEFAULT_SETTINGS, ...stored };
+    return {
+      wa: /^62\d{8,14}$/.test(String(stored.wa || "")) ? String(stored.wa) : DEFAULT_SETTINGS.wa,
+      storeName: String(stored.storeName || DEFAULT_SETTINGS.storeName).slice(0, 80),
+      hours: String(stored.hours || DEFAULT_SETTINGS.hours).slice(0, 120),
+      address: String(stored.address || DEFAULT_SETTINGS.address).slice(0, 200)
+    };
   }
   lsSet(KEYS.SETTINGS, DEFAULT_SETTINGS);
   return { ...DEFAULT_SETTINGS };
@@ -752,48 +848,147 @@ if (!Array.isArray(wishlist)) wishlist = [];
 let cart = lsGet(KEYS.CART, []);
 if (!Array.isArray(cart)) cart = [];
 
+let authHashes = (() => {
+  const stored = lsGet(KEYS.AUTH_HASHES, null);
+  if (stored && typeof stored === "object" && /^[a-f0-9]{64}$/.test(stored.admin || "") && /^[a-f0-9]{64}$/.test(stored.user || "")) {
+    return { admin: stored.admin, user: stored.user };
+  }
+  return { ...DEFAULT_AUTH_HASHES };
+})();
+
+const IDLE_LIMIT_MS = 20 * 60 * 1000;
+
 let session = ssGet(KEYS.SESSION, null);
+if (session && (!session.onboarded || !["admin","user"].includes(session.role) || (session.lastActive && Date.now() - session.lastActive > IDLE_LIMIT_MS))) {
+  session = null;
+  ssSet(KEYS.SESSION, null);
+}
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({
   "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
 }[c]));
 const rp = n => "Rp " + Number(n || 0).toLocaleString("id-ID");
-const wa = t => `https://wa.me/${encodeURIComponent(settings.wa || WA)}?text=${encodeURIComponent(t)}`;
+const wa = t => {
+  const num = /^62\d{8,14}$/.test(String(settings.wa || "")) ? settings.wa : WA;
+  return `https://wa.me/${encodeURIComponent(num)}?text=${encodeURIComponent(t)}`;
+};
 const label = t => t.replace("Asin dan gurih","Gurih").replace("Asam dan segar","Segar");
-const getImg = p => (p && (p.imgData || (p.img && IM[p.img]))) || FALLBACK_SVG;
+const safeImgUrl = u => {
+  if (typeof u !== "string") return FALLBACK_SVG;
+  if (u.startsWith("data:image/jpeg;base64,") || u.startsWith("data:image/png;base64,") || u.startsWith("data:image/webp;base64,") || u.startsWith("data:image/svg+xml")) {
+    return u;
+  }
+  return FALLBACK_SVG;
+};
+const getImg = p => safeImgUrl((p && (p.imgData || (p.img && IM[p.img]))) || FALLBACK_SVG);
 const brandShort = () => (settings.storeName || "Maison").split("–")[0].trim() || "Maison";
 
+function sanitizeObj(val) {
+  if (Array.isArray(val)) return val.map(sanitizeObj);
+  if (val && typeof val === "object") {
+    const out = {};
+    for (const k of Object.keys(val)) {
+      if (k === "__proto__" || k === "constructor" || k === "prototype") continue;
+      out[k] = sanitizeObj(val[k]);
+    }
+    return out;
+  }
+  return val;
+}
+
 // ============================================================================
-// Auth
+// Auth & Entry Security Gate
 // ============================================================================
 let selectedLoginRole = "user";
+let verifiedPendingRole = null;
 let pendingRouteAfterLogin = null;
 let lockTimerId = null;
 
+function sha256Fallback(ascii) {
+  function rightRotate(v, a) { return (v >>> a) | (v << (32 - a)); }
+  const mathPow = Math.pow, maxWord = mathPow(2, 32), words = [];
+  let result = "", asciiBitLength = ascii.length * 8;
+  if (!sha256Fallback.initH) {
+    const initH = [], initK = [];
+    let primeCounter = 0, isComposite = {};
+    for (let candidate = 2; primeCounter < 64; candidate++) {
+      if (!isComposite[candidate]) {
+        for (let i = 0; i < 313; i += candidate) isComposite[i] = candidate;
+        initH[primeCounter] = (mathPow(candidate, 0.5) * maxWord) | 0;
+        initK[primeCounter++] = (mathPow(candidate, 1 / 3) * maxWord) | 0;
+      }
+    }
+    sha256Fallback.initH = initH.slice(0, 8);
+    sha256Fallback.k = initK;
+  }
+  const hash = sha256Fallback.initH.slice(0);
+  const k = sha256Fallback.k;
+  ascii += "\x80";
+  while (ascii.length % 64 - 56) ascii += "\x00";
+  for (let i = 0; i < ascii.length; i++) {
+    const j = ascii.charCodeAt(i);
+    if (j >> 8) return "";
+    words[i >> 2] |= j << ((3 - i) % 4) * 8;
+  }
+  words[words.length] = ((asciiBitLength / maxWord) | 0);
+  words[words.length] = (asciiBitLength);
+  for (let j = 0; j < words.length;) {
+    const w = words.slice(j, j += 16), oldHash = hash.slice(0);
+    for (let i = 0; i < 64; i++) {
+      const w15 = w[i - 15], w2 = w[i - 2];
+      const a = hash[0], e = hash[4];
+      const temp1 = hash[7] + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25)) +
+        ((e & hash[5]) ^ ((~e) & hash[6])) + k[i] +
+        (w[i] = i < 16 ? w[i] : (w[i - 16] + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3)) + w[i - 7] + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))) | 0);
+      const temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22)) + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+      hash.unshift((temp1 + temp2) | 0);
+      hash[4] = (hash[4] + temp1) | 0;
+      hash.pop();
+    }
+    for (let i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0;
+  }
+  for (let i = 0; i < 8; i++) {
+    for (let j = 3; j + 1; j--) {
+      const b = (hash[i] >> (j * 8)) & 255;
+      result += ((b < 16) ? 0 : "") + b.toString(16);
+    }
+  }
+  return result;
+}
+
+async function hashPassword(plain) {
+  const input = AUTH_SALT + String(plain);
+  if (window.crypto && window.crypto.subtle && typeof TextEncoder !== "undefined") {
+    const buf = await window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(input));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+  const utf8 = unescape(encodeURIComponent(input));
+  return sha256Fallback(utf8);
+}
+
 function getLockState() {
-  const s = ssGet(KEYS.LOCK, { fails: 0, lockUntil: 0 });
+  const s = lsGet(KEYS.LOCK, { fails: 0, lockUntil: 0 });
   return s && typeof s === "object" ? s : { fails: 0, lockUntil: 0 };
 }
 
 function setLockState(state) {
-  ssSet(KEYS.LOCK, state);
+  lsSet(KEYS.LOCK, state);
 }
 
-function setLoginRole(role) {
+function setGateRole(role) {
   selectedLoginRole = role === "admin" ? "admin" : "user";
-  $("#roleUserBtn").setAttribute("aria-pressed", String(selectedLoginRole === "user"));
-  $("#roleAdminBtn").setAttribute("aria-pressed", String(selectedLoginRole === "admin"));
-  $("#loginError").classList.remove("on");
+  $("#gateRoleUser").setAttribute("aria-pressed", String(selectedLoginRole === "user"));
+  $("#gateRoleAdmin").setAttribute("aria-pressed", String(selectedLoginRole === "admin"));
+  $("#gateError").classList.remove("on");
 }
 
 function syncLockUI() {
   const state = getLockState();
-  const now = Date.now();
-  const remainMs = state.lockUntil - now;
-  const passEl = $("#loginPass");
-  const submitEl = $("#loginSubmit");
-  const lockMsg = $("#loginLockMsg");
+  const remainMs = (state.lockUntil || 0) - Date.now();
+  const passEl = $("#gatePass");
+  const submitEl = $("#gatePassSubmit");
+  const lockMsg = $("#gateLockMsg");
 
   if (remainMs > 0) {
     const sec = Math.ceil(remainMs / 1000);
@@ -801,32 +996,82 @@ function syncLockUI() {
     lockMsg.classList.add("on");
     passEl.disabled = true;
     submitEl.disabled = true;
-    if (!lockTimerId) {
-      lockTimerId = setInterval(syncLockUI, 500);
-    }
+    if (!lockTimerId) lockTimerId = setInterval(syncLockUI, 500);
   } else {
     if (lockTimerId) {
       clearInterval(lockTimerId);
       lockTimerId = null;
     }
-    if (state.lockUntil) {
-      setLockState({ fails: 0, lockUntil: 0 });
-    }
+    if (state.lockUntil) setLockState({ fails: state.fails >= 5 ? state.fails : 0, lockUntil: 0 });
     lockMsg.classList.remove("on");
     passEl.disabled = false;
     submitEl.disabled = false;
   }
 }
 
+function showGateStep(step) {
+  $("#gatePassForm").hidden = step !== "pass";
+  $("#gateUserForm").hidden = step !== "user-info";
+  $("#gateAdminForm").hidden = step !== "admin-info";
+  if (step === "pass") {
+    $("#gateStepTag").textContent = "Langkah 1 dari 2 · Verifikasi Akses";
+    $("#gatePass").value = "";
+    $("#gateError").classList.remove("on");
+    syncLockUI();
+  } else if (step === "user-info") {
+    $("#gateStepTag").textContent = "Langkah 2 dari 2 · Data Pengunjung";
+    $("#obUserError").classList.remove("on");
+    $("#obUserName").focus();
+  } else if (step === "admin-info") {
+    $("#gateStepTag").textContent = "Langkah 2 dari 2 · Kontak WhatsApp Admin";
+    $("#obAdminError").classList.remove("on");
+    $("#obAdminWa").value = settings.wa || WA;
+    $("#obAdminName").focus();
+  }
+}
+
+function applyAuthGate() {
+  const unlocked = !!(session && session.onboarded);
+  $("#entryGate").hidden = unlocked;
+  $("#appHeader").hidden = !unlocked;
+  $("#appFooter").hidden = !unlocked;
+  if (!unlocked) {
+    $("#storefront").hidden = true;
+    $("#dashboardView").hidden = true;
+    $("#waFab").hidden = true;
+    showGateStep("pass");
+    return false;
+  }
+  $("#waFab").hidden = false;
+  renderWelcomeBanner();
+  return true;
+}
+
+function renderWelcomeBanner() {
+  const banner = $("#welcomeBanner");
+  if (!session || !session.onboarded) {
+    banner.hidden = true;
+    return;
+  }
+  banner.hidden = false;
+  if (session.role === "admin") {
+    $("#welcomeGreeting").textContent = `Selamat datang, ${session.name || "Admin"}!`;
+    $("#welcomeMeta").textContent = `Peran: Admin · Nomor WhatsApp kontak aktif: ${settings.wa}`;
+  } else {
+    $("#welcomeGreeting").textContent = `Selamat datang, ${session.name}!`;
+    const parts = [];
+    if (session.age) parts.push(`${session.age} thn`);
+    if (session.gender) parts.push(session.gender);
+    if (session.address) parts.push(session.address);
+    $("#welcomeMeta").textContent = `Siap memesan di Maison · ${parts.join(" · ")}`;
+  }
+}
+
 function openLoginModal(preRole = "user", nextHash = null) {
   pendingRouteAfterLogin = nextHash;
-  setLoginRole(preRole);
-  $("#loginPass").value = "";
-  $("#loginPass").type = "password";
-  $("#loginTogglePass").textContent = "Tampil";
-  $("#loginError").classList.remove("on");
-  syncLockUI();
-  openModalEl($("#loginModal"), $("#loginPass").disabled ? $("#loginClose") : $("#loginPass"));
+  setGateRole(preRole);
+  applyAuthGate();
+  showGateStep("pass");
 }
 
 function renderAuthHeader() {
@@ -842,89 +1087,201 @@ function renderAuthHeader() {
     cartBtn.hidden = true;
   }
 
-  if (!session) {
-    area.innerHTML = `<button type="button" class="hdr-btn" id="loginOpenBtn">Masuk</button>`;
-    $("#loginOpenBtn").onclick = () => openLoginModal("user", null);
-  } else {
-    const roleLabel = session.role === "admin" ? "Admin" : (session.name || "User");
-    area.innerHTML = `
-      <span class="role-tag" title="Peran aktif">${esc(roleLabel)}</span>
-      <a href="#/dashboard" class="hdr-btn" id="hdrDashBtn">Dashboard</a>
-      <button type="button" class="hdr-btn ghost" id="logoutBtn">Keluar</button>
-    `;
-    $("#logoutBtn").onclick = logout;
+  if (!session || !session.onboarded) {
+    area.innerHTML = "";
+    return;
   }
+  const roleLabel = session.role === "admin" ? `Admin: ${session.name}` : `Halo, ${session.name}`;
+  area.innerHTML = `
+    <span class="role-tag" title="Akun aktif">${esc(roleLabel)}</span>
+    <a href="#/dashboard" class="hdr-btn" id="hdrDashBtn">Dashboard</a>
+    <button type="button" class="hdr-btn ghost" id="logoutBtn">Keluar</button>
+  `;
+  $("#logoutBtn").onclick = () => logout("Anda telah keluar dari sesi.");
 }
 
-function logout() {
+function logout(notice = "Anda telah keluar dari sesi.") {
   session = null;
+  verifiedPendingRole = null;
+  pendingRouteAfterLogin = null;
   ssSet(KEYS.SESSION, null);
+  $("#gatePass").value = "";
+  $("#gatePass").type = "password";
+  $("#gateTogglePass").textContent = "Tampil";
+  $("#obUserName").value = "";
+  $("#obUserAge").value = "";
+  $("#obUserGender").value = "";
+  $("#obUserAddr").value = "";
+  $("#obAdminName").value = "";
   if (location.hash.startsWith("#/dashboard")) {
-    location.hash = "#home";
+    history.replaceState(null, "", "#home");
   }
   renderAuthHeader();
-  renderAllPublic();
-  handleRoute();
-  showToast("Anda telah keluar dari sesi.");
+  applyAuthGate();
+  showToast(notice);
 }
 
-$("#roleUserBtn").onclick = () => setLoginRole("user");
-$("#roleAdminBtn").onclick = () => setLoginRole("admin");
+$("#gateRoleUser").onclick = () => setGateRole("user");
+$("#gateRoleAdmin").onclick = () => setGateRole("admin");
 
-$("#loginTogglePass").onclick = () => {
-  const inp = $("#loginPass");
+$("#gateTogglePass").onclick = () => {
+  const inp = $("#gatePass");
   const show = inp.type === "password";
   inp.type = show ? "text" : "password";
-  $("#loginTogglePass").textContent = show ? "Sembunyi" : "Tampil";
+  $("#gateTogglePass").textContent = show ? "Sembunyi" : "Tampil";
 };
 
-$("#loginForm").addEventListener("submit", e => {
+$("#gatePassForm").addEventListener("submit", async e => {
   e.preventDefault();
   const state = getLockState();
-  if (state.lockUntil > Date.now()) {
+  if ((state.lockUntil || 0) > Date.now()) {
     syncLockUI();
     return;
   }
 
-  const entered = $("#loginPass").value;
-  const expected = AUTH_PASSWORDS[selectedLoginRole];
-  if (entered === expected) {
+  const entered = $("#gatePass").value;
+  const enteredHash = await hashPassword(entered);
+  const expectedHash = authHashes[selectedLoginRole];
+
+  if (enteredHash === expectedHash) {
     setLockState({ fails: 0, lockUntil: 0 });
-    session = {
-      role: selectedLoginRole,
-      name: selectedLoginRole === "admin" ? "Admin Maison" : "Pelanggan",
-      prefTaste: ""
-    };
-    ssSet(KEYS.SESSION, session);
-    const targetHash = pendingRouteAfterLogin || "#/dashboard";
-    pendingRouteAfterLogin = null;
-    closeModalEl($("#loginModal"));
-    renderAuthHeader();
-    renderAllPublic();
-    location.hash = targetHash;
-    handleRoute();
-    showToast(`Berhasil masuk sebagai ${selectedLoginRole === "admin" ? "Admin" : "User"}.`);
+    verifiedPendingRole = selectedLoginRole;
+    showGateStep(selectedLoginRole === "admin" ? "admin-info" : "user-info");
     return;
   }
 
   const fails = (state.fails || 0) + 1;
   const roleName = selectedLoginRole === "admin" ? "Admin" : "User";
-  const errEl = $("#loginError");
+  const errEl = $("#gateError");
   errEl.textContent = `Password salah untuk peran ${roleName}. Coba lagi.`;
   errEl.classList.add("on");
 
-  const box = $("#loginBox");
-  box.classList.remove("shake");
-  void box.offsetWidth;
-  box.classList.add("shake");
+  const cardEl = $("#gateCard");
+  cardEl.classList.remove("shake");
+  void cardEl.offsetWidth;
+  cardEl.classList.add("shake");
 
-  if (fails >= 5) {
-    setLockState({ fails, lockUntil: Date.now() + 30000 });
+  if (fails % 5 === 0) {
+    const mult = Math.min(4, Math.floor(fails / 5));
+    const lockMs = mult === 1 ? 30000 : (mult === 2 ? 60000 : 120000);
+    setLockState({ fails, lockUntil: Date.now() + lockMs });
     syncLockUI();
   } else {
     setLockState({ fails, lockUntil: 0 });
   }
 });
+
+$("#obUserBack").onclick = () => { verifiedPendingRole = null; showGateStep("pass"); };
+$("#obAdminBack").onclick = () => { verifiedPendingRole = null; showGateStep("pass"); };
+
+$("#gateUserForm").addEventListener("submit", e => {
+  e.preventDefault();
+  if (verifiedPendingRole !== "user") return;
+  const name = $("#obUserName").value.trim();
+  const age = Number($("#obUserAge").value);
+  const gender = $("#obUserGender").value;
+  const address = $("#obUserAddr").value.trim();
+  const err = $("#obUserError");
+
+  if (name.length < 2 || name.length > 50) {
+    err.textContent = "Nama harus diisi (2–50 karakter).";
+    err.classList.add("on");
+    return;
+  }
+  if (!Number.isInteger(age) || age < 5 || age > 120) {
+    err.textContent = "Masukkan umur yang valid (5–120 tahun).";
+    err.classList.add("on");
+    return;
+  }
+  if (!["Perempuan","Laki-laki","Lainnya"].includes(gender)) {
+    err.textContent = "Pilih jenis kelamin.";
+    err.classList.add("on");
+    return;
+  }
+  if (address.length < 5 || address.length > 200) {
+    err.textContent = "Alamat lengkap minimal 5 karakter.";
+    err.classList.add("on");
+    return;
+  }
+
+  err.classList.remove("on");
+  session = {
+    role: "user",
+    name,
+    age,
+    gender,
+    address,
+    prefTaste: "",
+    onboarded: true,
+    lastActive: Date.now()
+  };
+  verifiedPendingRole = null;
+  ssSet(KEYS.SESSION, session);
+  const target = pendingRouteAfterLogin || "#home";
+  pendingRouteAfterLogin = null;
+  location.hash = target;
+  renderAuthHeader();
+  renderAllPublic();
+  handleRoute();
+  window.scrollTo({ top: 0, behavior: "auto" });
+  if (target === "#home") $("#welcomeGreeting").focus();
+  showToast(`Selamat datang, ${name}! Web Maison siap digunakan.`);
+});
+
+$("#gateAdminForm").addEventListener("submit", e => {
+  e.preventDefault();
+  if (verifiedPendingRole !== "admin") return;
+  const name = $("#obAdminName").value.trim();
+  const waNum = $("#obAdminWa").value.trim().replace(/\s+/g, "");
+  const err = $("#obAdminError");
+
+  if (name.length < 2 || name.length > 50) {
+    err.textContent = "Nama Admin harus diisi (2–50 karakter).";
+    err.classList.add("on");
+    return;
+  }
+  if (!/^62\d{8,14}$/.test(waNum)) {
+    err.textContent = "Nomor WhatsApp harus diawali 62 dan hanya angka (10–16 digit).";
+    err.classList.add("on");
+    return;
+  }
+
+  err.classList.remove("on");
+  settings.wa = waNum;
+  lsSet(KEYS.SETTINGS, settings);
+  session = {
+    role: "admin",
+    name,
+    onboarded: true,
+    lastActive: Date.now()
+  };
+  verifiedPendingRole = null;
+  ssSet(KEYS.SESSION, session);
+  const target = pendingRouteAfterLogin || "#/dashboard";
+  pendingRouteAfterLogin = null;
+  location.hash = target;
+  renderAuthHeader();
+  renderAllPublic();
+  handleRoute();
+  window.scrollTo({ top: 0, behavior: "auto" });
+  showToast(`Selamat datang, ${name}! Nomor WhatsApp kontak (${waNum}) aktif.`);
+});
+
+// Idle activity monitor
+["pointerdown","keydown","scroll"].forEach(evt => {
+  window.addEventListener(evt, () => {
+    if (session && session.onboarded) {
+      session.lastActive = Date.now();
+      ssSet(KEYS.SESSION, session);
+    }
+  }, { passive: true });
+});
+
+setInterval(() => {
+  if (session && session.onboarded && session.lastActive && (Date.now() - session.lastActive > IDLE_LIMIT_MS)) {
+    logout("Sesi dikunci otomatis demi keamanan karena tidak ada aktivitas.");
+  }
+}, 30000);
 
 // ============================================================================
 // Katalog
@@ -964,7 +1321,7 @@ function card(p, idx = 0) {
 
   return `<article class="card card-fade${soldOut ? " soldout" : ""}" data-taste="${esc(p.taste)}" data-type="${esc(p.type)}" style="animation-delay:${Math.min(idx * 40, 280)}ms">
     <div class="ph" data-id="${p.id}">
-      <img class="skel" src="${getImg(p)}" alt="${esc(p.name)}" loading="lazy" decoding="async" onload="this.classList.remove('skel')" onerror="this.src=FALLBACK_SVG;this.classList.remove('skel')">
+      <img class="skel" src="${getImg(p)}" alt="${esc(p.name)}" loading="lazy" decoding="async">
       ${bubblesHtml}${badgeHtml}${habisHtml}${wishHtml}
     </div>
     <div class="b">
@@ -1033,7 +1390,16 @@ function renderRecommendations() {
 
 function clearLoadedSkeletons() {
   document.querySelectorAll(".ph img.skel").forEach(img => {
-    if (img.complete) img.classList.remove("skel");
+    if (img.complete) {
+      img.classList.remove("skel");
+    } else if (!img.dataset.boundSkel) {
+      img.dataset.boundSkel = "1";
+      img.addEventListener("load", () => img.classList.remove("skel"), { once: true });
+      img.addEventListener("error", () => {
+        img.src = FALLBACK_SVG;
+        img.classList.remove("skel");
+      }, { once: true });
+    }
   });
 }
 
@@ -1066,6 +1432,7 @@ function renderAllPublic() {
   renderFavorites();
   render();
   syncStoreSettingsUI();
+  renderWelcomeBanner();
   clearLoadedSkeletons();
 }
 
@@ -1142,7 +1509,10 @@ function buildCartWhatsAppUrl() {
     total += sub;
     return `- ${item.qty}x ${prod.name} (${rp(sub)})`;
   });
-  const msg = `Halo ${brandShort()}, saya ingin memesan:\n${lines.join("\n")}\nTotal: ${rp(total)}`;
+  const profileLine = session && session.name
+    ? `\n\nPemesan: ${session.name}${session.address ? `\nAlamat: ${session.address}` : ""}`
+    : "";
+  const msg = `Halo ${brandShort()}, saya ingin memesan:\n${lines.join("\n")}\nTotal: ${rp(total)}${profileLine}`;
   return { url: wa(msg), validItems, total };
 }
 
@@ -1226,22 +1596,53 @@ function renderUserDashboard(container) {
         <div class="stat-card"><div class="stat-lbl">Produk Disukai</div><div class="stat-num">${validWishCount}</div></div>
         <div class="stat-card"><div class="stat-lbl">Total Pesanan</div><div class="stat-num">${myOrders.length}</div></div>
       </div>
-      <form id="nickForm" style="max-width:420px;display:flex;flex-direction:column;gap:12px">
+      <form id="nickForm" style="max-width:480px;display:flex;flex-direction:column;gap:12px">
         <div class="field">
-          <label for="nickInput">Nama Panggilan (disimpan di sesi)</label>
-          <input id="nickInput" type="text" maxlength="40" value="${esc(session.name || "Pelanggan")}" required>
+          <label for="nickInput">Nama Lengkap / Panggilan</label>
+          <input id="nickInput" type="text" minlength="2" maxlength="50" value="${esc(session.name || "Pelanggan")}" required>
         </div>
-        <button type="submit" class="btn" style="align-self:flex-start">Simpan Nama</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="field">
+            <label for="uAgeInput">Umur</label>
+            <input id="uAgeInput" type="number" min="5" max="120" value="${esc(session.age || "")}" required>
+          </div>
+          <div class="field">
+            <label for="uGenderInput">Jenis Kelamin</label>
+            <select id="uGenderInput" required>
+              ${["Perempuan","Laki-laki","Lainnya"].map(g => `<option value="${g}" ${session.gender === g ? "selected" : ""}>${g}</option>`).join("")}
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="uAddrInput">Alamat Lengkap</label>
+          <textarea id="uAddrInput" minlength="5" maxlength="200" required>${esc(session.address || "")}</textarea>
+        </div>
+        <div class="err-msg" id="uProfErr" role="alert"></div>
+        <button type="submit" class="btn" style="align-self:flex-start">Simpan Profil</button>
       </form>
     `;
     $("#nickForm").onsubmit = e => {
       e.preventDefault();
-      const val = $("#nickInput").value.trim() || "Pelanggan";
-      session.name = val;
+      const name = $("#nickInput").value.trim();
+      const age = Number($("#uAgeInput").value);
+      const gender = $("#uGenderInput").value;
+      const address = $("#uAddrInput").value.trim();
+      const err = $("#uProfErr");
+      if (name.length < 2 || !Number.isInteger(age) || age < 5 || age > 120 || address.length < 5) {
+        err.textContent = "Pastikan nama (min 2 huruf), umur (5–120), dan alamat (min 5 huruf) valid.";
+        err.classList.add("on");
+        return;
+      }
+      err.classList.remove("on");
+      session.name = name;
+      session.age = age;
+      session.gender = gender;
+      session.address = address;
       ssSet(KEYS.SESSION, session);
       renderAuthHeader();
+      renderWelcomeBanner();
       renderUserDashboard(container);
-      showToast("Nama panggilan diperbarui.");
+      showToast("Data profil diperbarui.");
     };
   } else if (userTab === "wishlist") {
     const items = wishlist.map(id => P.find(p => p.id === id)).filter(Boolean);
@@ -1454,6 +1855,7 @@ function renderAdminDashboard(container) {
     { id: "products", label: "Kelola Produk", cnt: P.length },
     { id: "orders", label: "Pesanan", cnt: newOrderCnt || orders.length },
     { id: "settings", label: "Pengaturan Toko" },
+    { id: "security", label: "Keamanan Akses" },
     { id: "data", label: "Data & Reset" }
   ];
 
@@ -1685,6 +2087,53 @@ function renderAdminDashboard(container) {
       renderAllPublic();
       showToast("Pengaturan toko disimpan.");
     };
+  } else if (adminTab === "security") {
+    main.innerHTML = `
+      <h2 class="dash-sec-title">Keamanan Akses &amp; Password</h2>
+      <p style="font-size:14px;color:#5b4a3f;margin-bottom:16px">Perbarui password untuk peran User atau Admin. Password disimpan dalam bentuk hash SHA-256 ter-salt.</p>
+      <form id="secPassForm" style="max-width:460px;display:flex;flex-direction:column;gap:12px">
+        <div class="field">
+          <label for="secTargetRole">Peran yang Diubah</label>
+          <select id="secTargetRole">
+            <option value="user">User (Pengunjung)</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="secNewPass">Password Baru (min. 4 karakter)</label>
+          <input id="secNewPass" type="password" minlength="4" maxlength="64" required placeholder="Masukkan password baru...">
+        </div>
+        <div class="field">
+          <label for="secConfPass">Konfirmasi Password Baru</label>
+          <input id="secConfPass" type="password" minlength="4" maxlength="64" required placeholder="Ulangi password baru...">
+        </div>
+        <div class="err-msg" id="secErr" role="alert"></div>
+        <button type="submit" class="btn" style="align-self:flex-start">Simpan Password Baru</button>
+      </form>
+    `;
+    $("#secPassForm").onsubmit = async e => {
+      e.preventDefault();
+      const role = $("#secTargetRole").value === "admin" ? "admin" : "user";
+      const p1 = $("#secNewPass").value;
+      const p2 = $("#secConfPass").value;
+      const err = $("#secErr");
+      if (p1.length < 4) {
+        err.textContent = "Password minimal 4 karakter.";
+        err.classList.add("on");
+        return;
+      }
+      if (p1 !== p2) {
+        err.textContent = "Konfirmasi password tidak cocok.";
+        err.classList.add("on");
+        return;
+      }
+      err.classList.remove("on");
+      authHashes[role] = await hashPassword(p1);
+      lsSet(KEYS.AUTH_HASHES, authHashes);
+      $("#secNewPass").value = "";
+      $("#secConfPass").value = "";
+      showToast(`Password untuk peran ${role === "admin" ? "Admin" : "User"} berhasil diperbarui.`);
+    };
   } else if (adminTab === "data") {
     main.innerHTML = `
       <h2 class="dash-sec-title">Kelola Data Aplikasi</h2>
@@ -1701,7 +2150,7 @@ function renderAdminDashboard(container) {
           </label>
         </div>
         <div class="item-row">
-          <div class="info"><strong>Reset ke Data Awal</strong><span>Kembalikan 7 produk bawaan Maison dan hapus pesanan/keranjang demo.</span></div>
+          <div class="info"><strong>Reset ke Data Awal</strong><span>Kembalikan 7 produk bawaan Maison, reset password default, dan hapus pesanan demo.</span></div>
           <button type="button" class="btn danger" id="resetDataBtn">Reset ke data awal</button>
         </div>
       </div>
@@ -1732,7 +2181,8 @@ function renderAdminDashboard(container) {
       const reader = new FileReader();
       reader.onload = () => {
         try {
-          const parsed = JSON.parse(String(reader.result));
+          const rawParsed = JSON.parse(String(reader.result));
+          const parsed = sanitizeObj(rawParsed);
           if (!parsed || typeof parsed !== "object" || !Array.isArray(parsed.products) || !parsed.products.length) {
             throw new Error("Struktur products tidak valid.");
           }
@@ -1740,11 +2190,39 @@ function renderAdminDashboard(container) {
           if (!validProducts) throw new Error("Item produk tidak memenuhi format.");
 
           P = parsed.products.map(normalizeProduct);
-          orders = Array.isArray(parsed.orders) ? parsed.orders : [];
-          wishlist = Array.isArray(parsed.wishlist) ? parsed.wishlist : [];
-          cart = Array.isArray(parsed.cart) ? parsed.cart : [];
+          orders = Array.isArray(parsed.orders)
+            ? parsed.orders
+                .filter(o => o && typeof o === "object" && Array.isArray(o.items))
+                .map(o => ({
+                  id: String(o.id || ("ORD-" + Date.now().toString().slice(-6))).slice(0, 32),
+                  createdAt: String(o.createdAt || new Date().toISOString()),
+                  customerName: String(o.customerName || "Pelanggan").slice(0, 60),
+                  items: o.items
+                    .filter(it => it && typeof it === "object")
+                    .map(it => ({
+                      id: Number(it.id) || 0,
+                      name: String(it.name || "Produk").slice(0, 80),
+                      price: Math.max(0, Number(it.price) || 0),
+                      qty: Math.max(1, Math.round(Number(it.qty) || 1))
+                    })),
+                  total: Math.max(0, Number(o.total) || 0),
+                  status: ["Baru","Diproses","Selesai","Dibatalkan"].includes(o.status) ? o.status : "Baru"
+                }))
+            : [];
+          wishlist = Array.isArray(parsed.wishlist) ? parsed.wishlist.filter(x => Number.isInteger(x)) : [];
+          cart = Array.isArray(parsed.cart)
+            ? parsed.cart
+                .filter(c => c && Number.isInteger(c.id) && Number.isInteger(c.qty) && c.qty > 0)
+                .map(c => ({ id: c.id, qty: c.qty }))
+            : [];
           if (parsed.settings && typeof parsed.settings === "object") {
-            settings = { ...DEFAULT_SETTINGS, ...parsed.settings };
+            const s = parsed.settings;
+            settings = {
+              wa: /^62\d{8,14}$/.test(String(s.wa || "")) ? String(s.wa) : DEFAULT_SETTINGS.wa,
+              storeName: String(s.storeName || DEFAULT_SETTINGS.storeName).slice(0, 80),
+              hours: String(s.hours || DEFAULT_SETTINGS.hours).slice(0, 120),
+              address: String(s.address || DEFAULT_SETTINGS.address).slice(0, 200)
+            };
           }
           lsSet(KEYS.PRODUCTS, P);
           lsSet(KEYS.ORDERS, orders);
@@ -1765,18 +2243,20 @@ function renderAdminDashboard(container) {
     $("#resetDataBtn").onclick = () => {
       openConfirmDialog(
         "Reset ke Data Awal?",
-        "Semua perubahan produk, pesanan, keranjang, dan pengaturan toko akan dikembalikan ke data bawaan.",
+        "Semua perubahan produk, pesanan, keranjang, pengaturan toko, dan password akan dikembalikan ke bawaan.",
         () => {
           P = cloneProducts();
           orders = [];
           wishlist = [];
           cart = [];
           settings = { ...DEFAULT_SETTINGS };
+          authHashes = { ...DEFAULT_AUTH_HASHES };
           lsSet(KEYS.PRODUCTS, P);
           lsSet(KEYS.ORDERS, orders);
           lsSet(KEYS.WISHLIST, wishlist);
           lsSet(KEYS.CART, cart);
           lsSet(KEYS.SETTINGS, settings);
+          lsSet(KEYS.AUTH_HASHES, authHashes);
           renderAuthHeader();
           renderAllPublic();
           renderAdminDashboard(container);
@@ -1982,7 +2462,7 @@ let lastFocusedEl = null;
 let confirmCallback = null;
 
 function getOpenModal() {
-  const list = ["#confirmModal","#productFormModal","#loginModal","#modal"];
+  const list = ["#confirmModal","#productFormModal","#modal"];
   return list.map(s => $(s)).find(el => el && el.classList.contains("on")) || null;
 }
 
@@ -1997,9 +2477,6 @@ function openModalEl(modalEl, focusTarget) {
 function closeModalEl(modalEl) {
   if (!modalEl || !modalEl.classList.contains("on")) return;
   modalEl.classList.remove("on");
-  if (modalEl.id === "loginModal" && location.hash.startsWith("#/dashboard") && !session) {
-    history.replaceState(null, "", "#home");
-  }
   if (!getOpenModal() && lastFocusedEl && typeof lastFocusedEl.focus === "function") {
     lastFocusedEl.focus();
     lastFocusedEl = null;
@@ -2065,11 +2542,10 @@ $("#cfOk").onclick = () => {
 $("#cfCancel").onclick = () => { confirmCallback = null; closeModalEl($("#confirmModal")); };
 $("#cfClose").onclick = () => { confirmCallback = null; closeModalEl($("#confirmModal")); };
 $("#mClose").onclick = () => closeModalEl($("#modal"));
-$("#loginClose").onclick = () => closeModalEl($("#loginModal"));
 $("#pfClose").onclick = () => closeModalEl($("#productFormModal"));
 $("#pfCancel").onclick = () => closeModalEl($("#productFormModal"));
 
-[ "#modal", "#loginModal", "#productFormModal", "#confirmModal" ].forEach(sel => {
+[ "#modal", "#productFormModal", "#confirmModal" ].forEach(sel => {
   $(sel).addEventListener("click", e => {
     if (e.target === $(sel)) closeModalEl($(sel));
   });
@@ -2174,26 +2650,23 @@ function renderDashboard() {
 }
 
 function handleRoute() {
+  if (!applyAuthGate()) {
+    const h = location.hash;
+    if (h === "#/dashboard/admin") setGateRole("admin");
+    return;
+  }
   const h = location.hash;
   const inDash = h.startsWith("#/dashboard");
   if (inDash) {
-    if (!session) {
-      const wantedRole = h === "#/dashboard/admin" ? "admin" : "user";
-      $("#storefront").hidden = false;
-      $("#dashboardView").hidden = true;
-      $("#waFab").style.display = "";
-      openLoginModal(wantedRole, h);
-      return;
-    }
     $("#storefront").hidden = true;
     $("#dashboardView").hidden = false;
-    $("#waFab").style.display = "none";
+    $("#waFab").hidden = true;
     renderDashboard();
     window.scrollTo({ top: 0, behavior: "auto" });
   } else {
     $("#storefront").hidden = false;
     $("#dashboardView").hidden = true;
-    $("#waFab").style.display = "";
+    $("#waFab").hidden = false;
   }
 }
 

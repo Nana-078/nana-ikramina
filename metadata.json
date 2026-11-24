@@ -2,5 +2,7 @@
   "name": "Maison – Food & Moments",
   "description": "Katalog kuliner UMKM Maison – Food & Moments bernuansa Victorian minimalis dengan fitur filter rasa/jenis, keranjang WhatsApp, serta Dashboard User dan Admin.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
